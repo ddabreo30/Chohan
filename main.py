@@ -16,34 +16,40 @@ def main():
     data = f.read()
     lst = []
     data = data.split("\n")
-    for line in data:
-        line_items = line.split(',')
-        dic = {
-            "name": line_items[0],
-            "play": line_items[1],
-            "bet": line_items[2],
-            "balance": 1000
-        }
-        lst.append(dic)
-    print(lst)
+    cont = True
+    while cont:
+        for line in data:
+            line_items = line.split(',')
+            dic = {
+                "name": line_items[0],
+                "play": line_items[1],
+                "bet": line_items[2],
+                "balance": 1000
+            }
+            lst.append(dic)
+        print(lst)
 
 
-    dice = random.randrange(0,7)
-    print("dice roll", dice)
+        dice = random.randrange(0,7)
+        print("dice roll", dice)
 
-    lst = decrement_from_dictionary(lst)
-    check_valid(lst)
+        lst = decrement_from_dictionary(lst)
+        check_valid(lst)
 
-    lst = calculate_winnings(lst, dice)
+        lst = calculate_winnings(lst, dice)
 
-    for item in lst:
-        print(item)
-    
-    for item in lst:
-        cursor.execute("INSERT INTO Players VALUES (\"" + item['name'] + "\"," + str(item['balance']) + ');')
-    sql.commit()
+        for item in lst:
+            print(item)
+        
+        for item in lst:
+            cursor.execute("INSERT INTO Players VALUES (\"" + item['name'] + "\"," + str(item['balance']) + ');')
+        sql.commit()
+        cont = check_has_money(lst)
     cursor.close()
     sql.close()
+
+def check_has_money(lst):
+    return True
 
 def calculate_winnings(lst, dice):
     for item in lst: # loop each

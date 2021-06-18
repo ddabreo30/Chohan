@@ -1,3 +1,4 @@
+from mysql.connector.connection import MySQLConnection
 from invalidInputException import InvalidInputException
 import random
 import mysql.connector
@@ -10,6 +11,7 @@ def main():
     f = open("input.txt", "r+")
 
     sql = create_connection(HOST_NAME, 'root')
+    cursor = sql.cursor()
 
     data = f.read()
     lst = []
@@ -38,8 +40,10 @@ def main():
         print(item)
     
     for item in lst:
-        sql.execute("INSERT INTO Players VALUES (\"" + item['name'], "\"," + item['balance'] + ')')
-        
+        cursor.execute("INSERT INTO Players VALUES (\"" + item['name'] + "\"," + str(item['balance']) + ');')
+    sql.commit()
+    cursor.close()
+    sql.close()
 
 def calculate_winnings(lst, dice):
     for item in lst: # loop each
@@ -69,14 +73,22 @@ def check_valid(lst):
     if total != 0:
         raise InvalidInputException
 
-def create_connection(host_name, user_name, user_password):
+def create_connection(host_name, user_name, user_password=None) -> MySQLConnection:
     connection = None
     try:
-        connection = mysql.connector.connect(
-            host=host_name,
-            user=user_name,
-            passwd=user_password
-        )
+        if user_name is not None:
+            connection = mysql.connector.connect(
+                host=host_name,
+                user=user_name,
+                database="ChoHan",
+                passwd=user_password
+            )
+        else:
+            connection = mysql.connector.connect(
+                host=host_name,
+                database="ChoHan",
+                user=user_name
+            )
         print("Connection to MySQL DB successful")
     except Error as e:
         print(f"The error '{e}' occurred")

@@ -10,41 +10,44 @@ from flask import request
 
 HOST_NAME = "localhost"
 
+lst = []
 
 app = Flask(__name__)
 # @app.route("/")
 # def hello_world():
 #     return "<p>Hello, World!</p>"
 
-@app.route("/")
+
+@app.route("/frontend")
+def frontend():
+    return "<a href = \"/\">go to home</a>"
+@app.route("/", methods=["GET", "POST"])
 def main():
-
     # f = open("input.txt", "r+")
-    # sql = create_connection(HOST_NAME, 'root')
-    # cursor = sql.cursor()
+    sql = create_connection(HOST_NAME, 'root')
+    cursor = sql.cursor()
 
-    
+    if request.method == "GET":
+        cursor.execute("SELECT * FROM Players;")
 
-    data = f.read()
-    lst = []
+        new_list = []
+        for (name, worth) in cursor:
+            res = {"name": name, "balance": worth}
+            new_list.append(res)
+        return jsonify(new_list)
+
+
+
+    data = request.json
+    lst = data
     results = []
-    data = data.split("\n")
     cont = True
-
-    for line in data:
-        line_items = line.split(',')
-        dic = {
-            "name": line_items[0],
-            "play": line_items[1],
-            "bet": line_items[2],
-            "balance": 100
-        }
-        lst.append(dic)
     
     check_valid(lst)
 
     
 
+    cursor.execute("DELETE FROM Players;")
     while cont:
 
         # print(lst)
@@ -61,13 +64,13 @@ def main():
             print(item)
             results.append(item.copy())
         
-    #     for item in lst:
-    #         cursor.execute("INSERT INTO Players VALUES (\"" + item['name'] + "\"," + str(item['balance']) + ');')
-    #     sql.commit()
+        for item in lst:
+            cursor.execute("INSERT INTO Players VALUES (\"" + item['name'] + "\"," + str(item['balance']) + ');')
+        sql.commit()
         
         cont = check_has_money(lst)
-    # cursor.close()
-    # sql.close()
+    cursor.close()
+    sql.close()
     return jsonify(results)
 
 

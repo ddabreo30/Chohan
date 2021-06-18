@@ -3,52 +3,80 @@ from invalidInputException import InvalidInputException
 import random
 import mysql.connector
 from mysql.connector import Error
+from flask import Flask
+from flask import jsonify
+from flask import request
 
 
 HOST_NAME = "localhost"
 
-def main():
-    f = open("input.txt", "r+")
 
-    sql = create_connection(HOST_NAME, 'root')
-    cursor = sql.cursor()
+app = Flask(__name__)
+# @app.route("/")
+# def hello_world():
+#     return "<p>Hello, World!</p>"
+
+@app.route("/")
+def main():
+
+    # f = open("input.txt", "r+")
+    # sql = create_connection(HOST_NAME, 'root')
+    # cursor = sql.cursor()
+
+    
 
     data = f.read()
     lst = []
+    results = []
     data = data.split("\n")
     cont = True
+
+    for line in data:
+        line_items = line.split(',')
+        dic = {
+            "name": line_items[0],
+            "play": line_items[1],
+            "bet": line_items[2],
+            "balance": 100
+        }
+        lst.append(dic)
+    
+    check_valid(lst)
+
+    
+
     while cont:
-        for line in data:
-            line_items = line.split(',')
-            dic = {
-                "name": line_items[0],
-                "play": line_items[1],
-                "bet": line_items[2],
-                "balance": 1000
-            }
-            lst.append(dic)
-        print(lst)
+
+        # print(lst)
 
 
-        dice = random.randrange(0,7)
+        dice = random.randrange(1,7)
         print("dice roll", dice)
 
         lst = decrement_from_dictionary(lst)
-        check_valid(lst)
 
         lst = calculate_winnings(lst, dice)
 
         for item in lst:
             print(item)
+            results.append(item.copy())
         
-        for item in lst:
-            cursor.execute("INSERT INTO Players VALUES (\"" + item['name'] + "\"," + str(item['balance']) + ');')
-        sql.commit()
+    #     for item in lst:
+    #         cursor.execute("INSERT INTO Players VALUES (\"" + item['name'] + "\"," + str(item['balance']) + ');')
+    #     sql.commit()
+        
         cont = check_has_money(lst)
-    cursor.close()
-    sql.close()
+    # cursor.close()
+    # sql.close()
+    return jsonify(results)
+
 
 def check_has_money(lst):
+    for item in lst:
+        if item['balance'] == 0:
+            print("done with game!")
+            return False
+    
     return True
 
 def calculate_winnings(lst, dice):
@@ -104,4 +132,5 @@ def create_connection(host_name, user_name, user_password=None) -> MySQLConnecti
 connection = create_connection("localhost", "root", "")
 
 if __name__ == '__main__':
-    main()
+    # main()
+    app.run(port=8000,debug=True)
